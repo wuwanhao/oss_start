@@ -1,4 +1,4 @@
-module oss_start
+module data_service
 
 go 1.20
 
