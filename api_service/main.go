@@ -3,7 +3,7 @@ package main
 import (
 	"api_service/heartbeat"
 	"api_service/locate"
-	"data_service/objects"
+	"api_service/objects"
 	"log"
 	"net/http"
 	"os"
