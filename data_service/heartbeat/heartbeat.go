@@ -1,7 +1,7 @@
 package heartbeat
 
 import (
-	"data_service/utils/rabbitmq"
+	"connector/rabbitmq"
 	"os"
 	"time"
 )
@@ -11,6 +11,7 @@ func StartHeartbeat() {
 	q := rabbitmq.New(os.Getenv("RABBITMQ_SERVER"))
 	defer q.Close()
 
+	// 5s 一次
 	for {
 		q.Publish("apiServers", os.Getenv("LISTENLADDRESS"))
 		time.Sleep(5 * time.Second)

@@ -2,7 +2,6 @@ package rabbitmq
 
 import (
 	"encoding/json"
-
 	"github.com/rabbitmq/amqp091-go"
 )
 
