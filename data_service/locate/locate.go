@@ -1,7 +1,7 @@
 package locate
 
 import (
-	"data_service/utils/rabbitmq"
+	"connector/rabbitmq"
 	"os"
 	"strconv"
 )

@@ -1,0 +1,12 @@
+{
+    "mappings": {
+        "objects": {
+            "properties": {
+                "name": {"type": "string", "index": "not analyzed"},
+                "version": {"type":"integer"},
+                "size": {"type": "integer"},
+                "hash": {"type": "string"}
+            }
+        }
+    }
+}
