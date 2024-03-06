@@ -1,20 +1,45 @@
 package main
 
 import (
-	"api_service/heartbeat"
-	"api_service/locate"
-	"api_service/objects"
-	"api_service/versions"
+	"api_service/common/config"
+	"api_service/router"
+	"context"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 )
 
 func main() {
 
-	go heartbeat.ListenHeartbeat()
-	http.HandleFunc("/objects/", objects.Handler)
-	http.HandleFunc("/locate/", locate.Handler)
-	http.HandleFunc("/versions/", versions.Handler)
-	log.Fatal(http.ListenAndServe(os.Getenv("LISTEN_ADDRESS"), nil))
+	// 设置启动模式
+	gin.SetMode(config.Config.Server.Mode)
+	// 初始化路由
+	routers := router.InitRouter()
+	srv := &http.Server{
+		Addr:    config.Config.Server.Address,
+		Handler: routers,
+	}
+	// 启动服务
+	log.Println("Starting Server...")
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("listen failed: %v\n", config.Config.Server.Address)
+		}
+	}()
+	log.Printf("success, listen: %v\n", config.Config.Server.Address)
+
+	// 监听退出消息
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("Shutdown Server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Println("Server Shutdown:", err)
+	}
+	log.Println("Server exit!")
 }

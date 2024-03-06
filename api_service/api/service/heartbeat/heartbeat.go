@@ -1,9 +1,9 @@
 package heartbeat
 
 import (
+	"api_service/common/config"
 	"connector/rabbitmq"
 	"math/rand"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -17,7 +17,7 @@ var mutex sync.Mutex
 
 // 接收和处理来自数据服务节点的心跳消息
 func ListenHeartbeat() {
-	q := rabbitmq.New(os.Getenv("RABBITMQ_SERVER"))
+	q := rabbitmq.New(config.Config.RabbitMq.Host)
 	defer q.Close()
 
 	q.Bind("apiServers")

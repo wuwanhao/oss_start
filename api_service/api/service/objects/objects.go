@@ -1,13 +1,16 @@
 package objects
 
 import (
-	"api_service/heartbeat"
-	"api_service/locate"
-	objectStream "api_service/objectStream"
+	"api_service/api/service/heartbeat"
+	"api_service/api/service/locate"
+	"api_service/api/service/objectStream"
+	"api_service/utils"
+	"connector/es"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -22,8 +25,34 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		get(w, r)
 		return
 	}
+	if method == http.MethodDelete {
+		del(w, r)
+		return
+	}
 
 	w.WriteHeader(http.StatusMethodNotAllowed)
+}
+
+// 删除
+func del(w http.ResponseWriter, r *http.Request) {
+
+	// 获取文件名
+	name := strings.Split(r.URL.EscapedPath(), "/")[2]
+	version, err := es.SearchLatestVersion(name)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// put一个同名，版本加一，但是大小为0，hash为空字符串的元数据，表示这是一个删除标记
+	e := es.PutMetadata(name, version.Version+1, 0, "")
+	if e != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 }
 
 // 接口服务的get方法
@@ -51,14 +80,38 @@ func getStream(object string) (io.Reader, error) {
 
 // 接口服务的put方法
 func put(w http.ResponseWriter, r *http.Request) {
-	// 1.拿到要上传的文件名
-	object := strings.Split(r.URL.EscapedPath(), "/")[2]
-	// 2.上传文件
-	c, err := storeObject(object, r.Body)
-	if err != nil {
-		log.Println(err)
+	// 1.获取文件hash
+	hash := utils.GetHashFromHeader(r.Header)
+	if hash == "" {
+		log.Println("missing object hash in digest header")
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	w.WriteHeader(c)
+	c, e := storeObject(url.PathEscape(hash), r.Body)
+	if e != nil {
+		log.Println(e)
+		w.WriteHeader(c)
+		return
+	}
+	if c != http.StatusOK {
+		w.WriteHeader(c)
+		return
+	}
+
+	// 2.拿到要上传的文件名
+	name := strings.Split(r.URL.EscapedPath(), "/")[2]
+	// 3.拿到文件大小
+	size := utils.GetSizeFromHeader(r.Header)
+	// 4.上传文件
+	//uploadResult := es.AddVersion(name, hash, size)
+	fmt.Println(name)
+	fmt.Println(size)
+	fmt.Println(hash)
+	// if uploadResult != nil {
+	// 	log.Println(uploadResult)
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// }
+
 }
 
 // 存储文件

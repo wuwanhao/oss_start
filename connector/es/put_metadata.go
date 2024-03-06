@@ -1,8 +1,6 @@
 package es
 
 import (
-	es "connector/es/entity"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,7 +9,7 @@ import (
 )
 
 func PutMetadata(name string, version int, size int64, hash string) error {
-	// 向ES中查询
+	//向ES中添加API: PUT /metadata/objects/<object_name>_<version>?op_type=create
 	doc := fmt.Sprintf(`{"name":"%s", "version":"%d", "size":"%d", "hash":"%s"}`, name, version, size, hash)
 	client := http.Client{}
 	url := fmt.Sprintf("http://%s/metadata/_doc/%s_%d?op_type=create", os.Getenv("ES_SERVER"), name, version)
@@ -41,25 +39,4 @@ func AddVersion(name, hash string, size int64) error {
 		return e
 	}
 	return PutMetadata(name, version.Version+1, size, hash)
-}
-
-// 获取指定名称对象的所有版本，若不指定，则获取全部对象的全部版本  from, size 代表分页
-func GetAllVersions(name string, from, size int) ([]es.Metadata, error) {
-	url := fmt.Sprintf("http://%s/metadata/_search?sort=name,version&from=%d&size=%d", os.Getenv("ES_SERVER"), from, size)
-	if name != "" {
-		url += "&q=name:" + name
-	}
-	response, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	metadatas := make([]es.Metadata, 0)
-	result, _ := io.ReadAll(response.Body)
-	var sr es.SearchResult
-	json.Unmarshal(result, &sr)
-	for i := range sr.HIts.Hits {
-		metadatas = append(metadatas, sr.HIts.Hits[i].Source)
-	}
-	return metadatas, nil
 }
