@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -57,8 +58,39 @@ func del(w http.ResponseWriter, r *http.Request) {
 
 // 接口服务的get方法
 func get(w http.ResponseWriter, r *http.Request) {
-	// 1.拿到要取得的文件名
-	object := strings.Split(r.URL.EscapedPath(), "/")[2]
+	// 1.获取文件名
+	name := strings.Split(r.URL.EscapedPath(), "/")[2]
+	// 2.获取文件的version，不考虑多个version的情况，以versionld数组的第一个元素作为客户端提供的版本号
+	versionId := r.URL.Query()["version"]
+	version := 0
+	var e error
+	if len(versionId) != 0 {
+		version, e = strconv.Atoi(versionId[0])
+		if e != nil {
+			log.Println(e)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	// 3.获取对象的元数据信息
+	meta, err := es.GetMetadata(name, version)
+	if err != nil {
+		log.Println(e)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if meta.Hash == "" {
+		// 当前要查找的对象已经被删除
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// 4.因为之前是用元数据的hash作为作为对象在数据服务中对应的name，所以此处通过hash去作为对象的name
+	object := url.PathEscape(meta.Hash)
+
+	// 5.从数据服务中拿到对象的原始数据
 	stream, err := getStream(object)
 	if err != nil {
 		log.Println(err)
@@ -103,14 +135,11 @@ func put(w http.ResponseWriter, r *http.Request) {
 	// 3.拿到文件大小
 	size := utils.GetSizeFromHeader(r.Header)
 	// 4.上传文件
-	//uploadResult := es.AddVersion(name, hash, size)
-	fmt.Println(name)
-	fmt.Println(size)
-	fmt.Println(hash)
-	// if uploadResult != nil {
-	// 	log.Println(uploadResult)
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// }
+	uploadResult := es.AddVersion(name, hash, size)
+	if uploadResult != nil {
+		log.Println(uploadResult)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 }
 
