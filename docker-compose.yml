@@ -1,0 +1,27 @@
+version: '3'
+services:
+  ## es
+  elasticsearch:
+    image: bitnami/elasticsearch
+    container_name: oss_start_elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+  ## rabbitmq
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: oss_start_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=123456
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+## 自定义数据卷
+volumes:
+  rabbitmq_data:
