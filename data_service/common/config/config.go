@@ -8,7 +8,6 @@ import (
 // 总配置
 type config struct {
 	Server   server   `yaml:"server"`
-	Es       es       `yaml:"db"`
 	RabbitMq rabbitmq `yaml:"rabbitmq"`
 	Oss      oss      `yaml:"oss"`
 }
@@ -24,15 +23,6 @@ type server struct {
 type oss struct {
 	StorageRoot  string `yaml:"storage-root"`
 	StorageIndex string `yaml:"storage-index"`
-}
-
-// Es配置
-type es struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Index    string `yaml:"index"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
 }
 
 // mq配置

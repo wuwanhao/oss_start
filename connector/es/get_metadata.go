@@ -19,7 +19,7 @@ func GetMetadata(name string, version int) (es.Metadata, error) {
 }
 
 func getMetadata(name string, versionId int) (meta es.Metadata, e error) {
-	// 精确定位，直接返回元数据的内容 API: GET /metadata/objects/<object_name>_<version_id>/_source
+	// 精确定位，直接返回元数据的内容 API: GET /metadata/file/<object_name>_<version_id>/_source
 	url := fmt.Sprintf("http://%s/metadata/_doc/%s_%d/_source", os.Getenv("ES_SERVER"), name, versionId)
 	r, e := http.Get(url)
 	if e != nil {

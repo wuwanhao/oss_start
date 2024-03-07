@@ -1,6 +1,7 @@
 package main
 
 import (
+	"api_service/api/service/heartbeat"
 	"api_service/common/config"
 	"api_service/router"
 	"context"
@@ -13,6 +14,9 @@ import (
 )
 
 func main() {
+
+	// 接收来自数据服务节点的心跳
+	go heartbeat.ListenHeartbeat()
 
 	// 设置启动模式
 	gin.SetMode(config.Config.Server.Mode)

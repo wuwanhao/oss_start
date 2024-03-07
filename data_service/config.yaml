@@ -1,7 +1,7 @@
 # 项目启动端口配置
 server:
-  name: api_service
-  address: localhost:8080
+  name: data_service
+  address: localhost:8090
   # gin debug mode
   mode: debug
 
@@ -12,13 +12,6 @@ oss:
   # OSS文件存储index
   storage-index: /file/
 
-# ES
-es:
-  host: localhost
-  port: 9200
-  index: metadata
-  username: root
-  password: 123456
 
 # RabbitMQ
 rabbitmq:

@@ -16,7 +16,7 @@ func NewPutStream(server, object string) *PutStream {
 	reader, writer := io.Pipe()
 	c := make(chan error)
 	go func() {
-		request, _ := http.NewRequest("PUT", "http://"+server+"/objects/"+object, reader)
+		request, _ := http.NewRequest("PUT", "http://"+server+"/file/"+object, reader)
 		client := http.Client{}
 		response, err := client.Do(request)
 		// 重新构造错误

@@ -9,7 +9,7 @@ import (
 )
 
 func PutMetadata(name string, version int, size int64, hash string) error {
-	//向ES中添加API: PUT /metadata/objects/<object_name>_<version>?op_type=create
+	//向ES中添加API: PUT /metadata/file/<object_name>_<version>?op_type=create
 	doc := fmt.Sprintf(`{"name":"%s", "version":"%d", "size":"%d", "hash":"%s"}`, name, version, size, hash)
 	client := http.Client{}
 	url := fmt.Sprintf("http://%s/metadata/_doc/%s_%d?op_type=create", os.Getenv("ES_SERVER"), name, version)

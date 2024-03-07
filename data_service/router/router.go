@@ -1,9 +1,8 @@
 package router
 
 import (
-	"api_service/api/controller"
-	"api_service/middleware"
-
+	"data_service/api/controller"
+	"data_service/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,5 +21,5 @@ func InitRouter() *gin.Engine {
 
 // register 路由接口
 func register(router *gin.Engine) {
-	router.GET("/file/:name", controller.LocateFile)
+	router.GET("/file/:name", controller.GetFile)
 }
