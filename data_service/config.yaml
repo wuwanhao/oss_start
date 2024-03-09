@@ -8,7 +8,7 @@ server:
 # OSS
 oss:
   # OSS文件存储根地址
-  storage-root:  /Users/wu/tmp
+  storage-root: /tmp
   # OSS文件存储index
   storage-index: /file/
 
