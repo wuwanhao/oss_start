@@ -4,7 +4,6 @@ import (
 	"api_service/common/config"
 	"encoding/json"
 	"github.com/rabbitmq/amqp091-go"
-	"log"
 	"strconv"
 )
 
@@ -19,7 +18,6 @@ type RabbitMQ struct {
 func New() *RabbitMQ {
 	// rabbitMQ 连接url
 	conn_param := "amqp://" + config.Config.RabbitMq.Username + ":" + config.Config.RabbitMq.Password + "@" + config.Config.RabbitMq.Host + ":" + strconv.Itoa(config.Config.RabbitMq.Port) + "/" + config.Config.RabbitMq.Virtualhost
-	log.Println(conn_param)
 	conn, err := amqp091.Dial(conn_param)
 	if err != nil {
 		panic(err)

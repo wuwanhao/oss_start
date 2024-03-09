@@ -1,8 +1,9 @@
 package locate
 
 import (
-	"api_service/common/config"
 	"connector/rabbitmq"
+	"data_service/common/config"
+	"data_service/utils"
 	"os"
 	"strconv"
 )
@@ -28,7 +29,7 @@ func StartLocate() {
 			panic(e)
 		}
 		if Locate(config.Config.Oss.StorageRoot + config.Config.Oss.StorageIndex + object) {
-			q.Send(msg.ReplyTo, os.Getenv("LISTEN_ADDRESS"))
+			q.Send(msg.ReplyTo, utils.GetServerIp())
 		}
 	}
 }

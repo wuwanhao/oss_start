@@ -8,11 +8,10 @@ import (
 
 // Result 通用结构
 type Result struct {
-	Code    int `json:"code"` // 状态码
-	Message string `json:message` // 提示信息
-	Data    interface{} `json:"data"` // 返回的数据
+	Code    int         `json:"code"`  // 状态码
+	Message string      `json:message` // 提示信息
+	Data    interface{} `json:"data"`  // 返回的数据
 }
-
 
 // Success 返回成功消息体
 func Success(c *gin.Context, data interface{}) {
@@ -25,6 +24,7 @@ func Success(c *gin.Context, data interface{}) {
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
+
 // Failed 返回失败消息体
 func Failed(c *gin.Context, code int, message string) {
 	res := Result{}
