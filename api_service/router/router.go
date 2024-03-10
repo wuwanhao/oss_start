@@ -22,5 +22,5 @@ func InitRouter() *gin.Engine {
 
 // register 路由接口
 func register(router *gin.Engine) {
-	router.GET("/file/:name", controller.LocateFile)
+	router.POST("/file", controller.PutObject)
 }

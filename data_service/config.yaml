@@ -1,7 +1,7 @@
 # 项目启动端口配置
 server:
   name: data_service
-  address: localhost:8090
+  address: 0.0.0.0:8090
   # gin debug mode
   mode: debug
 

@@ -8,7 +8,7 @@ import (
 // 总配置
 type config struct {
 	Server   server   `yaml:"server"`
-	Es       es       `yaml:"db"`
+	Es       es       `yaml:"es"`
 	RabbitMq rabbitmq `yaml:"rabbitmq"`
 	Oss      oss      `yaml:"oss"`
 }

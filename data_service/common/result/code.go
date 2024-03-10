@@ -11,7 +11,7 @@ type Codes struct {
 	FILE_NOT_FOUND        uint
 	FILE_BYTE_TRANS_ERROR uint
 	FILE_NAME_CHECK_ERROR uint
-	FILE_CHECK_ERROR      uint
+	FILE_PUT_EMPTY_ERROR  uint
 	FILE_UPLOAD_ERROR     uint
 }
 
@@ -21,7 +21,7 @@ var ApiCode = &Codes{
 	FAILED:                501,
 	FILE_NOT_FOUND:        50401,
 	FILE_BYTE_TRANS_ERROR: 50402,
-	FILE_CHECK_ERROR:      50403,
+	FILE_PUT_EMPTY_ERROR:  50403,
 	FILE_UPLOAD_ERROR:     50404,
 	FILE_NAME_CHECK_ERROR: 50405,
 }
@@ -33,7 +33,7 @@ func init() {
 		ApiCode.FAILED:                "失败",
 		ApiCode.FILE_NOT_FOUND:        "该文件不存在",
 		ApiCode.FILE_BYTE_TRANS_ERROR: "文件返回数据流失败",
-		ApiCode.FILE_CHECK_ERROR:      "文件上传校验失败",
+		ApiCode.FILE_PUT_EMPTY_ERROR:  "上传文件为空",
 		ApiCode.FILE_NAME_CHECK_ERROR: "上传文件名不能为空",
 		ApiCode.FILE_UPLOAD_ERROR:     "文件上传失败",
 	}

@@ -17,7 +17,6 @@ func main() {
 
 	// 接收来自数据服务节点的心跳
 	go heartbeat.ListenHeartbeat()
-
 	// 设置启动模式
 	gin.SetMode(config.Config.Server.Mode)
 	// 初始化路由
@@ -27,23 +26,21 @@ func main() {
 		Handler: routers,
 	}
 	// 启动服务
-	log.Println("Starting Server...")
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("listen failed: %v\n", config.Config.Server.Address)
+			log.Printf("[api_service] server listen failed: %v\n", config.Config.Server.Address)
 		}
 	}()
-	log.Printf("success, listen: %v\n", config.Config.Server.Address)
+	log.Printf("[api_service] server start success, listen: %v\n", config.Config.Server.Address)
 
 	// 监听退出消息
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
-	log.Println("Shutdown Server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Println("Server Shutdown:", err)
+		log.Println("[api_service] server Shutdown:", err)
 	}
-	log.Println("Server exit!")
+	log.Println("[api_service] server exit!")
 }

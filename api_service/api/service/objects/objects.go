@@ -4,37 +4,19 @@ import (
 	"api_service/api/service/heartbeat"
 	"api_service/api/service/locate"
 	"api_service/api/service/objectStream"
+	"api_service/common/result"
 	"api_service/utils"
 	"connector/es"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	method := r.Method
-	if method == http.MethodPut {
-		put(w, r)
-		return
-	}
-
-	if method == http.MethodGet {
-		get(w, r)
-		return
-	}
-	if method == http.MethodDelete {
-		del(w, r)
-		return
-	}
-
-	w.WriteHeader(http.StatusMethodNotAllowed)
-}
-
-// 删除
+// 删除 todo
 func del(w http.ResponseWriter, r *http.Request) {
 
 	// 获取文件名
@@ -56,34 +38,20 @@ func del(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// 接口服务的get方法
-func get(w http.ResponseWriter, r *http.Request) {
-	// 1.获取文件名
-	name := strings.Split(r.URL.EscapedPath(), "/")[2]
-	// 2.获取文件的version，不考虑多个version的情况，以versionld数组的第一个元素作为客户端提供的版本号
-	versionId := r.URL.Query()["version"]
-	version := 0
-	var e error
-	if len(versionId) != 0 {
-		version, e = strconv.Atoi(versionId[0])
-		if e != nil {
-			log.Println(e)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	}
+// todo 接口服务的get方法
+func getFile(c *gin.Context, fileName string, version int) {
 
-	// 3.获取对象的元数据信息
-	meta, err := es.GetMetadata(name, version)
+	// 1.根据文件名获取对象的元数据信息
+	meta, err := es.GetMetadata(fileName, version)
 	if err != nil {
-		log.Println(e)
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("[data_service] object get metadata error: ", err)
+		result.Failed(c, int(result.ApiCode.ERROR_GET_METADATA), result.ApiCode.GetMessage(result.ApiCode.ERROR_GET_METADATA))
 		return
 	}
 
 	if meta.Hash == "" {
 		// 当前要查找的对象已经被删除
-		w.WriteHeader(http.StatusNotFound)
+		result.Failed(c, int(result.ApiCode.ERROR_OBJECT_DELETED), result.ApiCode.GetMessage(result.ApiCode.ERROR_OBJECT_DELETED))
 		return
 	}
 
@@ -91,56 +59,55 @@ func get(w http.ResponseWriter, r *http.Request) {
 	object := url.PathEscape(meta.Hash)
 
 	// 5.从数据服务中拿到对象的原始数据
-	stream, err := getStream(object)
+	fileStream, err := getStream(object)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotFound)
+		result.Failed(c, int(result.ApiCode.ERROR_GET_FILE), result.ApiCode.GetMessage(result.ApiCode.ERROR_GET_FILE))
 		return
 	}
-	io.Copy(w, stream)
+	_, err = io.Copy(c.Writer, fileStream)
+	return
 
 }
 
+// 从数据服务中拿到对象的原始数据
 func getStream(object string) (io.Reader, error) {
 
+	// 1.获取该文件存在的数据服务节点
 	server := locate.Locate(object)
 	if server == "" {
 		return nil, fmt.Errorf("object %s locate failed", object)
 	}
+	// 2.向该数据服务节点请求数据
 	return objectStream.NewGetStream(server, object)
 }
 
-// 接口服务的put方法
-func put(w http.ResponseWriter, r *http.Request) {
-	// 1.获取文件hash
-	hash := utils.GetHashFromHeader(r.Header)
-	if hash == "" {
-		log.Println("missing object hash in digest header")
-		w.WriteHeader(http.StatusBadRequest)
-		return
+// 文件上传
+func UploadObject(c *gin.Context, hash string) error {
+
+	// 1.将文件上传到数据服务
+	statusCode, err := storeObject(url.PathEscape(hash), c.Request.Body)
+	if err != nil {
+		return err
 	}
-	c, e := storeObject(url.PathEscape(hash), r.Body)
-	if e != nil {
-		log.Println(e)
-		w.WriteHeader(c)
-		return
-	}
-	if c != http.StatusOK {
-		w.WriteHeader(c)
-		return
+	if statusCode != http.StatusOK {
+		return err
 	}
 
 	// 2.拿到要上传的文件名
-	name := strings.Split(r.URL.EscapedPath(), "/")[2]
+	name := strings.TrimSpace(c.Query("file_name"))
+
 	// 3.拿到文件大小
-	size := utils.GetSizeFromHeader(r.Header)
-	// 4.上传文件
+	size := utils.GetSizeFromHeader(c.Request.Header)
+
+	// 4.上传文件到ES
 	uploadResult := es.AddVersion(name, hash, size)
 	if uploadResult != nil {
 		log.Println(uploadResult)
-		w.WriteHeader(http.StatusInternalServerError)
+		return err
 	}
 
+	return nil
 }
 
 // 存储文件

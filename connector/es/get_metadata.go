@@ -1,13 +1,14 @@
 package es
 
 import (
+	"api_service/common/config"
 	es "connector/es/entity"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
-	"os"
 )
 
 // 根据对象的name和versionId从ES中获取对象的元数据
@@ -20,7 +21,7 @@ func GetMetadata(name string, version int) (es.Metadata, error) {
 
 func getMetadata(name string, versionId int) (meta es.Metadata, e error) {
 	// 精确定位，直接返回元数据的内容 API: GET /metadata/file/<object_name>_<version_id>/_source
-	url := fmt.Sprintf("http://%s/metadata/_doc/%s_%d/_source", os.Getenv("ES_SERVER"), name, versionId)
+	url := fmt.Sprintf("http://%s:%d/metadata/_doc/%s_%d/_source", config.Config.Es.Host, config.Config.Es.Port, name, versionId)
 	r, e := http.Get(url)
 	if e != nil {
 		return
@@ -40,14 +41,17 @@ func getMetadata(name string, versionId int) (meta es.Metadata, e error) {
 func SearchLatestVersion(name string) (meta es.Metadata, e error) {
 
 	// 使用搜索，返回hit list， ES搜索API: GET /metadata/_search?@=name: <object_name>&size=l&sort=version:desc
-	url := fmt.Sprintf("http://%s/metadata/_search?q=name: %s&size=1&sort=version:desc", os.Getenv("ES_SERVER"), url.PathEscape(name))
-	r, e := http.Get(url)
+	es_url := fmt.Sprintf("http://%s:%d/metadata/_search?q=name:%s&size=1&sort=version:desc", config.Config.Es.Host, config.Config.Es.Port, url.PathEscape(name))
+
+	log.Println(es_url)
+	r, e := http.Get(es_url)
+	log.Println(r)
 	if e != nil {
 		return
 	}
 
 	if r.StatusCode != http.StatusOK {
-		e = fmt.Errorf("failed to search latest metadata: %d", r.StatusCode)
+		e = fmt.Errorf("[api_service][ES] failed to search latest metadata: %d", r.StatusCode)
 		return
 	}
 
@@ -64,11 +68,11 @@ func SearchLatestVersion(name string) (meta es.Metadata, e error) {
 func GetAllVersions(name string, from, size int) ([]es.Metadata, error) {
 	// GET全体对象版本列表API: GET /metadata/_search?sort=name, version&from=<from›&size=<size>
 	// GET指定对象版本列表API: GET /metadata/_search?sort=name, version&from=<from>&size=<size>&q=name:‹object_name>
-	url := fmt.Sprintf("http://%s/metadata/_search?sort=name,version&from=%d&size=%d", os.Getenv("ES_SERVER"), from, size)
+	es_url := fmt.Sprintf("http://%s:%d/metadata/_search?sort=name,version&from=%d&size=%d", config.Config.Es.Host, config.Config.Es.Port, from, size)
 	if name != "" {
-		url += "&q=name:" + name
+		es_url += "&q=name:" + name
 	}
-	response, err := http.Get(url)
+	response, err := http.Get(es_url)
 	if err != nil {
 		return nil, err
 	}

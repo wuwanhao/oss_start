@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"data_service/common/config"
 	"log"
 	"net"
+	"strings"
 )
 
 // 获取服务当前运行的IP
@@ -20,4 +22,11 @@ func GetServerIp() string {
 		}
 	}
 	return ""
+}
+
+// 获取当前HTTP服务的端口
+func GetServerHttpPort() string {
+	parts := strings.Split(config.Config.Server.Address, ":")
+	port := parts[len(parts)-1]
+	return port
 }

@@ -30,7 +30,6 @@ func GetFile(c *gin.Context) {
 		return
 	}
 
-	result.Success(c, filename)
 	return
 
 }
@@ -39,24 +38,24 @@ func GetFile(c *gin.Context) {
 func PutFile(c *gin.Context) {
 
 	// 1.获取文件原信息
-	fileName := c.PostForm("filename")
+	fileName := c.Param("file_name")
 	if fileName == "" {
 		result.Failed(c, int(result.ApiCode.FILE_NAME_CHECK_ERROR), result.ApiCode.GetMessage(result.ApiCode.FILE_NAME_CHECK_ERROR))
 		return
 	}
 	log.Println("[data_service] fileName: ", fileName)
 
-	postFile, _, err := c.Request.FormFile("file")
-	if err != nil {
-		log.Println("[data_service] check file error: ", err)
-		result.Failed(c, int(result.ApiCode.FILE_CHECK_ERROR), result.ApiCode.GetMessage(result.ApiCode.FILE_CHECK_ERROR))
+	postFile := c.Request.Body
+	if postFile == nil {
+		log.Println("[data_service] put body is empty")
+		result.Failed(c, int(result.ApiCode.FILE_PUT_EMPTY_ERROR), result.ApiCode.GetMessage(result.ApiCode.FILE_PUT_EMPTY_ERROR))
 		return
 	}
 	defer postFile.Close()
 
 	// 2.执行文件保存
 	fileService := file.NewFileService(config.Config.Oss.StorageRoot, config.Config.Oss.StorageIndex)
-	err = fileService.PutFile(postFile, fileName)
+	err := fileService.PutFile(postFile, fileName)
 	if err != nil {
 		log.Println("[data_service] put file error: ", err)
 		result.Failed(c, int(result.ApiCode.FILE_UPLOAD_ERROR), result.ApiCode.GetMessage(result.ApiCode.FILE_UPLOAD_ERROR))

@@ -13,7 +13,7 @@ func StartHeartbeat() {
 
 	// 5s 一次
 	for {
-		q.Publish("apiServers", utils.GetServerIp())
+		q.Publish("apiServers", utils.GetServerIp()+":"+utils.GetServerHttpPort())
 		time.Sleep(5 * time.Second)
 	}
 }

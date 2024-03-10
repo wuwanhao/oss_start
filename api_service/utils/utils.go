@@ -7,7 +7,7 @@ import (
 
 // 从请求头中获取文件大小
 func GetSizeFromHeader(h http.Header) int64 {
-	size, _ := strconv.ParseInt(h.Get("content-length"), 0, 64)
+	size, _ := strconv.ParseInt(h.Get("Content-Length"), 0, 64)
 	return size
 }
 

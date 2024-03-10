@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// 从服务节点定位文件
+// 从数据节点定位文件，若某一个数据节点定位到该文件，则该节点会返回自身IP地址
 func Locate(name string) string {
 
 	q := rabbitmq.New()
@@ -25,6 +25,7 @@ func Locate(name string) string {
 	return s
 }
 
+// 该文件在所有的数据节点中是否存在
 func Exist(name string) bool {
 	return Locate(name) != ""
 }
