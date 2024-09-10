@@ -1,7 +1,7 @@
 package locate
 
 import (
-	"connector/rabbitmq"
+	"connector_service/rabbitmq"
 	"strconv"
 	"time"
 )

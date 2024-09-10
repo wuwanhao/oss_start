@@ -1,7 +1,7 @@
 package versions
 
 import (
-	"connector/es"
+	"connector_service/es"
 	"encoding/json"
 	"log"
 	"net/http"

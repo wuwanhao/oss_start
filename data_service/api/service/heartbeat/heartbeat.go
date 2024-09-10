@@ -1,7 +1,7 @@
 package heartbeat
 
 import (
-	"connector/rabbitmq"
+	"connector_service/rabbitmq"
 	"data_service/utils"
 	"time"
 )

@@ -2,7 +2,7 @@ package es
 
 import (
 	"api_service/common/config"
-	es "connector/es/entity"
+	es "connector_service/es/entity"
 	"encoding/json"
 	"fmt"
 	"io"

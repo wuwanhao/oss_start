@@ -6,7 +6,7 @@ import (
 	"api_service/api/service/objectStream"
 	"api_service/common/result"
 	"api_service/utils"
-	"connector/es"
+	"connector_service/es"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
