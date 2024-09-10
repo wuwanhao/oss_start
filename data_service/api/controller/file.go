@@ -4,14 +4,16 @@ import (
 	"data_service/api/service/file"
 	"data_service/common/config"
 	"data_service/common/result"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 // 获取文件流
 func GetFile(c *gin.Context) {
 
+	// 文件服务实例
 	fileService := file.NewFileService(config.Config.Oss.StorageRoot, config.Config.Oss.StorageIndex)
 	filename := c.Query("file_name")
 	getFile, err := fileService.GetFile(filename)
