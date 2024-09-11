@@ -2,11 +2,11 @@ package es
 
 import (
 	"api_service/common/config"
+	"common_service/logs"
 	es "connector_service/es/entity"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -41,17 +41,16 @@ func getMetadata(name string, versionId int) (meta es.Metadata, e error) {
 func SearchLatestVersion(name string) (meta es.Metadata, e error) {
 
 	// 使用搜索，返回hit list， ES搜索API: GET /metadata/_search?@=name: <object_name>&size=l&sort=version:desc
-	es_url := fmt.Sprintf("http://%s:%d/metadata/_search?q=name:%s&size=1&sort=version:desc", config.Config.Es.Host, config.Config.Es.Port, url.PathEscape(name))
-
-	log.Println(es_url)
-	r, e := http.Get(es_url)
-	log.Println(r)
+	esUrl := fmt.Sprintf("http://%s:%d/metadata/_search?q=name:%s&size=1&sort=version:desc", config.Config.Es.Host, config.Config.Es.Port, url.PathEscape(name))
+	logs.Info("ES get metadata url: %v", esUrl)
+	r, e := http.Get(esUrl)
 	if e != nil {
+		logs.Warn("ES get metadata error: %v", e)
 		return
 	}
 
 	if r.StatusCode != http.StatusOK {
-		e = fmt.Errorf("[api_service][ES] failed to search latest metadata: %d", r.StatusCode)
+		e = fmt.Errorf("failed to search latest metadata: %d", r.StatusCode)
 		return
 	}
 

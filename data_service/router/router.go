@@ -2,7 +2,7 @@ package router
 
 import (
 	"data_service/api/controller"
-	"data_service/middleware"
+	"data_service/common/middleware"
 	"github.com/gin-gonic/gin"
 )
 

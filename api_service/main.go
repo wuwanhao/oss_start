@@ -4,9 +4,9 @@ import (
 	"api_service/api/service/heartbeat"
 	"api_service/common/config"
 	"api_service/router"
+	"common_service/logs"
 	"context"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,10 +15,12 @@ import (
 
 func main() {
 
-	// 接收来自数据服务节点的心跳
-	go heartbeat.ListenHeartbeat()
+	// 初始化日志库
+	logs.InitLog(config.Config.Server.Name)
 	// 设置启动模式
 	gin.SetMode(config.Config.Server.Mode)
+	// 接收来自数据服务节点的心跳
+	go heartbeat.ListenHeartbeat()
 	// 初始化路由
 	routers := router.InitRouter()
 	srv := &http.Server{
@@ -28,10 +30,10 @@ func main() {
 	// 启动服务
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("[api_service] server listen failed: %v\n", config.Config.Server.Address)
+			logs.Error("server listen failed: %v\n", config.Config.Server.Address)
 		}
 	}()
-	log.Printf("[api_service] server start success, listen: %v\n", config.Config.Server.Address)
+	logs.Info("server start success, listen: %v\n", config.Config.Server.Address)
 
 	// 监听退出消息
 	quit := make(chan os.Signal)
@@ -40,7 +42,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Println("[api_service] server Shutdown:", err)
+		logs.Error("server Shutdown: %v\n", err)
 	}
-	log.Println("[api_service] server exit!")
+	logs.Info("server exit!")
 }

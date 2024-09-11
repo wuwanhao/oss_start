@@ -20,6 +20,8 @@ rabbitmq:
   username: oss_start_admin
   password: 123456
   vhost: oss_start_vhost
+  api-exchange: apiServers
+  data-exchange: dataServers
 
 
 

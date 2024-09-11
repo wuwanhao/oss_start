@@ -27,11 +27,13 @@ type oss struct {
 
 // mq配置
 type rabbitmq struct {
-	Host        string `yaml:"host"`
-	Port        int    `yaml:"port"`
-	Username    string `yaml:"username"`
-	Password    string `yaml:"password"`
-	Virtualhost string `yaml:"vhost"`
+	Host         string `yaml:"host"`
+	Port         int    `yaml:"port"`
+	Username     string `yaml:"username"`
+	Password     string `yaml:"password"`
+	Virtualhost  string `yaml:"vhost"`
+	ApiExchange  string `yaml:"api-exchange"`
+	DataExchange string `yaml:"data-exchange"`
 }
 
 // 用于对外暴露的配置对象

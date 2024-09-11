@@ -2,7 +2,8 @@ package heartbeat
 
 import (
 	"connector_service/rabbitmq"
-	"data_service/utils"
+	"data_service/common/config"
+	"data_service/common/utils"
 	"time"
 )
 
@@ -13,7 +14,7 @@ func StartHeartbeat() {
 
 	// 5s 一次
 	for {
-		q.Publish("apiServers", utils.GetServerIp()+":"+utils.GetServerHttpPort())
+		q.Publish(config.Config.RabbitMq.ApiExchange, utils.GetServerIp()+":"+utils.GetServerHttpPort())
 		time.Sleep(5 * time.Second)
 	}
 }

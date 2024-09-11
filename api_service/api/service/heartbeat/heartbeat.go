@@ -1,6 +1,7 @@
 package heartbeat
 
 import (
+	"common_service/logs"
 	"connector_service/rabbitmq"
 	"math/rand"
 	"strconv"
@@ -37,11 +38,12 @@ func ListenHeartbeat() {
 // 10S后剔除
 func removeExpiredDataServer() {
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(time.Second)
 		mutex.Lock()
-		for s, t := range dataServers {
-			if t.Add(10 * time.Second).Before(time.Now()) {
-				delete(dataServers, s)
+		for dataServer, lastLiveTime := range dataServers {
+			if lastLiveTime.Add(10 * time.Second).Before(time.Now()) {
+				logs.Info("remove data node: %v\n", dataServer)
+				delete(dataServers, dataServer)
 			}
 		}
 		mutex.Unlock()

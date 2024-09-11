@@ -5,12 +5,12 @@ import (
 	"api_service/api/service/locate"
 	"api_service/api/service/objectStream"
 	"api_service/common/result"
-	"api_service/utils"
+	"api_service/common/utils"
+	"common_service/logs"
 	"connector_service/es"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,7 +23,7 @@ func del(w http.ResponseWriter, r *http.Request) {
 	name := strings.Split(r.URL.EscapedPath(), "/")[2]
 	version, err := es.SearchLatestVersion(name)
 	if err != nil {
-		log.Println(err)
+		logs.Warn("Err search latest version: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -31,7 +31,7 @@ func del(w http.ResponseWriter, r *http.Request) {
 	// put一个同名，版本加一，但是大小为0，hash为空字符串的元数据，表示这是一个删除标记
 	e := es.PutMetadata(name, version.Version+1, 0, "")
 	if e != nil {
-		log.Println(err)
+		logs.Warn("Err put metadata: %v\n", e)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -44,7 +44,7 @@ func getFile(c *gin.Context, fileName string, version int) {
 	// 1.根据文件名获取对象的元数据信息
 	meta, err := es.GetMetadata(fileName, version)
 	if err != nil {
-		log.Println("[data_service] object get metadata error: ", err)
+		logs.Warn("get object metadata error: ", err)
 		result.Failed(c, int(result.ApiCode.ERROR_GET_METADATA), result.ApiCode.GetMessage(result.ApiCode.ERROR_GET_METADATA))
 		return
 	}
@@ -61,7 +61,7 @@ func getFile(c *gin.Context, fileName string, version int) {
 	// 5.从数据服务中拿到对象的原始数据
 	fileStream, err := getStream(object)
 	if err != nil {
-		log.Println(err)
+		logs.Warn("get object stream from dataService error: %v", err)
 		result.Failed(c, int(result.ApiCode.ERROR_GET_FILE), result.ApiCode.GetMessage(result.ApiCode.ERROR_GET_FILE))
 		return
 	}
@@ -88,6 +88,7 @@ func UploadObject(c *gin.Context, hash string) error {
 	// 1.将文件上传到数据服务
 	statusCode, err := storeObject(url.PathEscape(hash), c.Request.Body)
 	if err != nil {
+		logs.Warn("storage object error: %v", err)
 		return err
 	}
 	if statusCode != http.StatusOK {
@@ -100,10 +101,10 @@ func UploadObject(c *gin.Context, hash string) error {
 	// 3.拿到文件大小
 	size := utils.GetSizeFromHeader(c.Request.Header)
 
-	// 4.上传文件到ES
+	// 4.存储文件信息到ES
 	uploadResult := es.AddVersion(name, hash, size)
 	if uploadResult != nil {
-		log.Println(uploadResult)
+		logs.Warn("es add file version info error: %v", uploadResult)
 		return err
 	}
 

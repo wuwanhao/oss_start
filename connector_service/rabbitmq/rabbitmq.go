@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"api_service/common/config"
+	"common_service/logs"
 	"encoding/json"
 	"github.com/rabbitmq/amqp091-go"
 	"strconv"
@@ -20,11 +21,13 @@ func New() *RabbitMQ {
 	conn_param := "amqp://" + config.Config.RabbitMq.Username + ":" + config.Config.RabbitMq.Password + "@" + config.Config.RabbitMq.Host + ":" + strconv.Itoa(config.Config.RabbitMq.Port) + "/" + config.Config.RabbitMq.Virtualhost
 	conn, err := amqp091.Dial(conn_param)
 	if err != nil {
+		logs.Error("Connect MQ error: %v\n", err)
 		panic(err)
 	}
 
 	channel, e := conn.Channel()
 	if e != nil {
+		logs.Error("Create channel error: %v\n", e)
 		panic(e)
 	}
 
@@ -39,6 +42,7 @@ func New() *RabbitMQ {
 	)
 
 	if e != nil {
+		logs.Error("Create queue in channel error: %v\n", e)
 		panic(e)
 	}
 
@@ -68,6 +72,7 @@ func (q *RabbitMQ) Bind(exchange string) {
 func (q *RabbitMQ) Send(queue string, body interface{}) {
 	str, e := json.Marshal(body)
 	if e != nil {
+		logs.Error("Format mq msg error: %v\n", e)
 		panic(e)
 	}
 	e = q.channel.Publish(
@@ -80,6 +85,7 @@ func (q *RabbitMQ) Send(queue string, body interface{}) {
 			Body:    []byte(str),
 		})
 	if e != nil {
+		logs.Error("Send msg to mq error: %v\n", e)
 		panic(e)
 	}
 }
@@ -88,6 +94,7 @@ func (q *RabbitMQ) Send(queue string, body interface{}) {
 func (q *RabbitMQ) Publish(exchange string, body interface{}) {
 	str, e := json.Marshal(body)
 	if e != nil {
+		logs.Error("Format mq msg error: %v\n", e)
 		panic(e)
 	}
 
@@ -101,6 +108,7 @@ func (q *RabbitMQ) Publish(exchange string, body interface{}) {
 			Body:    []byte(str),
 		})
 	if e != nil {
+		logs.Error("Push msg to mq error: %v\n", e)
 		panic(e)
 	}
 
@@ -118,6 +126,7 @@ func (q *RabbitMQ) Consume() <-chan amqp091.Delivery {
 		nil,
 	)
 	if e != nil {
+		logs.Error("Consume msg error: %v\n", e)
 		panic(e)
 	}
 	return c
