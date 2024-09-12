@@ -2,10 +2,10 @@ package es
 
 // object的元数据
 type Metadata struct {
-	Name    string
-	Version int
-	Size    int64
-	Hash    string
+	Name    string // 对象名
+	Version int    // 对象版本
+	Size    int64  // 对象大小
+	Hash    string // 散列
 }
 
 // 与ES的搜索API返回的结构保持一致

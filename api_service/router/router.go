@@ -22,4 +22,7 @@ func InitRouter() *gin.Engine {
 // register 路由接口
 func register(router *gin.Engine) {
 	router.POST("/file", controller.PutObject)
+	router.GET("/objects", controller.GetObject)
+	router.DELETE("/objects", controller.DeleteObject)
+	router.GET("/versions/:name", controller.GetAllVersions)
 }

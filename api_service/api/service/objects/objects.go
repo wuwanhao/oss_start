@@ -49,8 +49,8 @@ func getFile(c *gin.Context, fileName string, version int) {
 		return
 	}
 
+	// 当前要查找的对象已经被删除
 	if meta.Hash == "" {
-		// 当前要查找的对象已经被删除
 		result.Failed(c, int(result.ApiCode.ERROR_OBJECT_DELETED), result.ApiCode.GetMessage(result.ApiCode.ERROR_OBJECT_DELETED))
 		return
 	}
@@ -83,7 +83,7 @@ func getStream(object string) (io.Reader, error) {
 }
 
 // 文件上传
-func UploadObject(c *gin.Context, hash string) error {
+func UploadObject(c *gin.Context, hash, name string) error {
 
 	// 1.将文件上传到数据服务
 	statusCode, err := storeObject(url.PathEscape(hash), c.Request.Body)
@@ -95,13 +95,10 @@ func UploadObject(c *gin.Context, hash string) error {
 		return err
 	}
 
-	// 2.拿到要上传的文件名
-	name := strings.TrimSpace(c.Query("file_name"))
-
-	// 3.拿到文件大小
+	// 2.拿到文件大小
 	size := utils.GetSizeFromHeader(c.Request.Header)
 
-	// 4.存储文件信息到ES
+	// 3.存储文件信息到ES
 	uploadResult := es.AddVersion(name, hash, size)
 	if uploadResult != nil {
 		logs.Warn("es add file version info error: %v", uploadResult)

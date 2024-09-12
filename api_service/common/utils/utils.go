@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
@@ -21,4 +22,9 @@ func GetHashFromHeader(h http.Header) string {
 		return ""
 	}
 	return digest[8:]
+}
+
+// todo: 根据文件头部的长度信息计算文件hash
+func GetHash(c *gin.Context) {
+
 }
